@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>High Tide — Staff Rota</title>
+<link rel="preconnect" href="https://fonts.bunny.net">
+<link href="https://fonts.bunny.net/css?family=cinzel:700|great-vibes:400|eb-garamond:400,600|lato:300,400,600,700" rel="stylesheet">
+<style>
+:root {
+  --navy:   #1C3D4A;
+  --teal:   #2E6B7E;
+  --gold:   #C9A96E;
+  --cream:  #F7F3ED;
+  --sand:   #EDE8DF;
+  --border: #D8D0C4;
+  --text:   #2C2624;
+  --muted:  #7A7068;
+  --red:    #A83030;
+  --green:  #2E6E46;
+  --bh:     #2A5030;
+  --closed: #3A2020;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Lato', system-ui, sans-serif; background: var(--cream); color: var(--text); }
+
+/* HEADER */
+.hdr { background: var(--navy); text-align: center; padding: 20px 16px 14px; }
+.hdr-name { font-family: 'Cinzel', Georgia, serif; font-size: 48px; font-weight: 700; color: var(--gold); letter-spacing: 6px; line-height: 1; }
+.hdr-by   { font-family: 'Great Vibes', cursive; font-size: 20px; color: rgba(255,255,255,.6); margin-top: 2px; }
+.hdr-sub  { font-family: 'Lato', sans-serif; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: rgba(255,255,255,.35); margin-top: 6px; }
+.hdr-rule { width: 48px; height: 1px; background: var(--gold); margin: 10px auto 0; opacity: .4; }
+
+/* ADMIN BAR */
+.abar { display: flex; align-items: center; gap: 8px; padding: 7px 14px; background: var(--sand); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.astat { font-size: 11px; color: var(--muted); }
+.astat.on { color: var(--teal); font-weight: 700; }
+.sp { flex: 1; }
+
+/* WEEK NAV */
+.wnav { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 11px 16px; background: white; border-bottom: 1px solid var(--border); }
+.wlbl { font-family: 'EB Garamond', serif; font-size: 16px; font-style: italic; color: var(--navy); min-width: 240px; text-align: center; }
+
+/* TABS */
+.tabs { display: flex; background: var(--navy); padding: 0 12px; overflow-x: auto; }
+.tbtn { padding: 10px 15px; border: none; background: transparent; color: rgba(255,255,255,.45); font-family: 'Lato', sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
+.tbtn:hover { color: rgba(255,255,255,.8); }
+.tbtn.on { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* CONTENT */
+.content { padding: 14px; max-width: 1140px; margin: 0 auto; }
+
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 13px; border: none; border-radius: 5px; cursor: pointer; font-family: 'Lato', sans-serif; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+.btn:hover { opacity: .85; }
+.btn-navy  { background: var(--navy); color: white; }
+.btn-teal  { background: var(--teal); color: white; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-ghost:hover { background: var(--sand); opacity: 1; }
+.btn-red   { background: var(--red); color: white; }
+.btn-sm    { padding: 5px 11px; font-size: 11px; }
+
+/* ADMIN TIP */
+.atip { display: none; padding: 8px 13px; background: #E6F2F0; border-left: 3px solid var(--teal); border-radius: 0 6px 6px 0; font-size: 11.5px; color: var(--teal); margin-bottom: 12px; }
+.atip.show { display: block; }
+
+/* ROTA TABLE */
+.rwrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; box-shadow: 0 2px 18px rgba(28,61,74,.11); }
+.rota  { width: 100%; min-width: 680px; border-collapse: collapse; background: white; }
+.rota thead th { background: var(--navy); color: white; padding: 10px 7px 9px; text-align: center; vertical-align: bottom; font-family: 'EB Garamond', serif; font-size: 13px; font-weight: 500; }
+.rota thead th.sh-hdr { text-align: left; width: 96px; font-family: 'Lato', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+.rota thead th.day-hdr { min-width: 110px; }
+.rota thead th.bh-hdr  { background: var(--bh) !important; }
+.rota thead th.cl-hdr  { background: var(--closed) !important; }
+.rota thead th.tbc-hdr { background: #2E5060 !important; }
+.ddate { display: block; font-size: 9.5px; opacity: .65; font-family: 'Lato', sans-serif; font-weight: 300; margin-top: 2px; }
+.bh-pill { display: block; font-size: 8px; font-family: 'Lato', sans-serif; font-weight: 700; letter-spacing: .4px; background: var(--gold); color: var(--navy); padding: 1px 6px; border-radius: 8px; margin-top: 4px; white-space: nowrap; width: fit-content; margin-left: auto; margin-right: auto; }
+.cl-pill { display: block; font-size: 8px; font-family: 'Lato', sans-serif; font-weight: 700; letter-spacing: .4px; background: #E8A0A0; color: var(--closed); padding: 1px 6px; border-radius: 8px; margin-top: 4px; white-space: nowrap; width: fit-content; margin-left: auto; margin-right: auto; }
+.svc-stripe { display: block; font-size: 8px; font-family: 'Lato', sans-serif; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; opacity: .65; margin-top: 4px; }
+
+/* CELLS */
+.rota td { padding: 9px 7px; border: 1px solid #EDE8E0; vertical-align: top; min-width: 90px; }
+.rota td.sh-cell { background: var(--sand); vertical-align: middle; min-width: 96px; }
+.sn { display: block; font-family: 'EB Garamond', serif; font-size: 14px; font-weight: 600; color: var(--navy); }
+.st { display: block; font-size: 10px; color: var(--muted); margin-top: 1px; }
+.rota td.tbc-cell { background: #EEF3F6; vertical-align: middle; }
+.rota td.tbc-cell.admin-cell { cursor: default; }
+.rota td.closed-cell { background: #F5EDED; vertical-align: middle; text-align: center; }
+.closed-lbl { font-size: 10.5px; font-weight: 700; color: var(--red); text-transform: uppercase; letter-spacing: 1px; font-family: 'Lato', sans-serif; }
+.closed-sub { font-size: 9.5px; color: var(--muted); margin-top: 3px; font-style: italic; }
+
+/* TAGS */
+.tag { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 11px; font-size: 10.5px; font-weight: 700; font-family: 'Lato', sans-serif; color: white; margin: 2px 2px 0 0; white-space: nowrap; }
+.tag-off    { background: #EDE8DF; color: #B0A898; font-weight: 400; font-style: italic; }
+.tag-ghost  { background: #F0EBE3; color: #C0B8B0; font-weight: 400; border: 1px dashed #D0C8C0; }
+.tag.clickable { cursor: pointer; }
+.tag.clickable:hover { opacity: .78; transform: scale(.97); transition: all .12s; }
+
+/* LEGEND */
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 11px; padding: 11px 14px; background: white; border-radius: 8px; box-shadow: 0 1px 6px rgba(28,61,74,.07); margin-top: 12px; font-size: 11px; color: var(--muted); }
+.li { display: flex; align-items: center; gap: 5px; }
+
+/* LOGIN */
+.lwrap { position: fixed; inset: 0; background: rgba(28,61,74,.88); z-index: 2000; display: none; align-items: center; justify-content: center; }
+.lwrap.open { display: flex; }
+.lbox { background: white; border-radius: 14px; padding: 34px 30px; width: 310px; text-align: center; box-shadow: 0 12px 48px rgba(0,0,0,.3); }
+.lbrand { font-family: 'Cinzel', serif; font-size: 26px; font-weight: 700; color: var(--navy); letter-spacing: 3px; }
+.lby    { font-family: 'Great Vibes', cursive; font-size: 18px; color: var(--muted); margin-top: 2px; }
+.lsub   { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin: 8px 0 22px; }
+.lerr   { font-size: 12px; color: var(--red); margin-top: 8px; display: none; }
+
+/* FORMS */
+.fg { margin-bottom: 13px; text-align: left; }
+.fg label { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--navy); margin-bottom: 4px; }
+.fg input, .fg select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 5px; font-family: 'Lato', sans-serif; font-size: 13px; background: white; color: var(--text); }
+.fg input:focus, .fg select:focus { outline: 2px solid var(--teal); border-color: transparent; }
+
+/* SETTINGS */
+.sgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(285px, 1fr)); gap: 14px; }
+.card { background: white; border-radius: 10px; padding: 20px 22px; box-shadow: 0 2px 12px rgba(28,61,74,.08); }
+.card-title { font-family: 'EB Garamond', serif; font-size: 17px; color: var(--navy); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.hint { font-size: 11.5px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+/* Staff edit rows */
+.serow { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #F5F0EA; }
+.serow:last-child { border-bottom: none; }
+.cdot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.iinput { width: 100%; border: 1px solid transparent; padding: 3px 6px; border-radius: 4px; font-family: 'Lato', sans-serif; font-size: 13px; background: transparent; color: var(--text); min-width: 0; display: block; }
+.iinput.role-input { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.iinput:focus { outline: none; border-color: var(--teal); background: white; }
+.sbadge { font-size: 9px; padding: 1px 6px; border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; flex-shrink: 0; align-self: flex-start; margin-top: 5px; }
+.sb-on  { background: #D8EFDF; color: var(--green); }
+.sb-off { background: #EEE9E0; color: var(--muted); }
+/* Shift rows */
+.shrow { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #F5F0EA; }
+.shrow:last-child { border-bottom: none; }
+/* Closure rows */
+.clrow { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid #F5F0EA; }
+.clrow:last-child { border-bottom: none; }
+/* Password msg */
+#pwmsg { font-size: 12px; margin-top: 8px; }
+#shmsg { font-size: 12px; margin-top: 8px; color: var(--green); }
+
+/* PRIVACY */
+.pdoc { background: white; border-radius: 10px; padding: 28px 30px; box-shadow: 0 2px 14px rgba(28,61,74,.08); max-width: 740px; }
+.pdoc h2 { font-family: 'EB Garamond', serif; font-size: 24px; color: var(--navy); margin-bottom: 4px; }
+.pmeta { font-size: 11px; color: var(--muted); margin-bottom: 20px; padding-bottom: 13px; border-bottom: 1px solid var(--border); }
+.pdoc h3 { font-family: 'EB Garamond', serif; font-size: 15px; color: var(--navy); margin: 18px 0 6px; }
+.pdoc p  { font-size: 13px; line-height: 1.75; color: #444; }
+.pdoc .pfooter { margin-top: 22px; padding-top: 13px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); line-height: 1.6; }
+
+/* FOOTER */
+.site-footer { margin-top: 28px; padding: 14px 16px 18px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); background: var(--sand); }
+.site-footer summary { cursor: pointer; font-weight: 700; color: var(--navy); letter-spacing: .3px; user-select: none; }
+.site-footer summary:hover { color: var(--teal); }
+.changelog { margin-top: 10px; line-height: 1.85; }
+.changelog h4 { font-family: 'EB Garamond', serif; font-size: 13px; color: var(--navy); margin-top: 10px; margin-bottom: 2px; }
+.changelog ul { padding-left: 16px; margin: 0; }
+.changelog li { font-size: 11px; color: var(--muted); }
+
+/* PRINT */
+@media print {
+  .abar, .tabs, .atip, .legend, .btn, .wnav .btn-ghost, .site-footer { display: none !important; }
+  #tab-privacy, #tab-settings { display: none !important; }
+  #tab-rota { display: block !important; }
+  body { background: white; }
+  .hdr { background: white !important; border-bottom: 2px solid var(--navy); padding: 10px; }
+  .hdr-name { color: var(--navy) !important; font-size: 36px; }
+  .hdr-by   { color: #555 !important; }
+  .hdr-sub  { color: #999 !important; }
+  .hdr-rule { display: none; }
+  .wnav { border: none; padding: 6px 0; background: white; }
+  .wlbl { font-size: 14px; }
+  .content { padding: 6px 0; }
+  .rwrap { box-shadow: none; border: 1px solid #CCC; border-radius: 0; }
+  .rota thead th { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .tag, .bh-pill, .cl-pill { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  @page { size: A4 landscape; margin: 1.2cm; }
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .hdr-name { font-size: 38px; letter-spacing: 4px; }
+  .content { padding: 10px; }
+  .sgrid { grid-template-columns: 1fr; }
+  .rota thead th { font-size: 11px; padding: 8px 4px; }
+  .rota td { padding: 7px 4px; }
+  .tag { font-size: 9.5px; padding: 2px 6px; }
+  .pdoc { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div class="lwrap" id="lw">
+  <div class="lbox">
+    <div class="lbrand">HIGH TIDE</div>
+    <div class="lby">by Pengelly's</div>
+    <div class="lsub">Admin Access</div>
+    <form id="lform" autocomplete="on" onsubmit="doLogin();return false;" method="dialog">
+      <input type="text" name="username" value="admin" autocomplete="username" style="display:none;position:absolute;left:-9999px" aria-hidden="true" tabindex="-1">
+      <div class="fg">
+        <label for="lpw">Password</label>
+        <input type="password" id="lpw" name="password" autocomplete="current-password"
+          placeholder="Enter admin password">
+      </div>
+      <button type="submit" class="btn btn-navy" style="width:100%">Sign In</button>
+    </form>
+    <div class="lerr" id="lerr">Incorrect password — please try again.</div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeLogin()">Cancel</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-name">HIGH TIDE</div>
+  <div class="hdr-by">by Pengelly's</div>
+  <div class="hdr-sub">Staff Rota</div>
+  <div class="hdr-rule"></div>
+</header>
+
+<!-- ADMIN BAR -->
+<div class="abar">
+  <span class="astat" id="astat">Staff view</span>
+  <div class="sp"></div>
+  <button class="btn btn-ghost btn-sm" id="lbtn" onclick="openLogin()">🔒 Admin Login</button>
+  <button class="btn btn-red btn-sm" id="obtn" onclick="doLogout()" style="display:none">Logout</button>
+  <button class="btn btn-navy btn-sm" onclick="window.print()">🖨 Print</button>
+</div>
+
+<!-- WEEK NAV -->
+<div class="wnav">
+  <button class="btn btn-ghost btn-sm" onclick="chgWk(-1)">← Prev</button>
+  <div class="wlbl" id="wlbl">—</div>
+  <button class="btn btn-ghost btn-sm" onclick="chgWk(1)">Next →</button>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tbtn on" onclick="setTab('rota',this)">Rota</button>
+  <button class="tbtn" onclick="setTab('privacy',this)">Privacy Notice</button>
+  <button class="tbtn" id="stab" style="display:none" onclick="setTab('settings',this)">⚙ Settings</button>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- ROTA TAB -->
+  <div id="tab-rota">
+    <div class="atip" id="atip">✏️ <strong>Admin mode:</strong> tap any staff name to assign or remove them. Tap a greyed name to add them. On days off, tap to override. Use ⚙ Settings to configure shifts, manage the team, or block closure dates.</div>
+    <div class="rwrap"><table class="rota"><thead id="rh"></thead><tbody id="rb"></tbody></table></div>
+    <div class="legend" id="leg"></div>
+  </div>
+
+  <!-- PRIVACY TAB -->
+  <div id="tab-privacy" style="display:none">
+    <div class="pdoc">
+      <h2>Staff Privacy Notice</h2>
+      <p class="pmeta">High Tide by Pengelly's, Looe, Cornwall &nbsp;·&nbsp; Effective May 2025 &nbsp;·&nbsp; Review May 2026</p>
+      <h3>1. Who We Are</h3>
+      <p>High Tide by Pengelly's ("the Venue", "we", "us") operates from Looe, Cornwall. This notice explains how we collect, use and protect your personal information as a member of our team. The data controller is the proprietor of High Tide. Direct any questions to the Floor Manager.</p>
+      <h3>2. What Personal Data This System Holds</h3>
+      <p>This rota system holds only: your name, your role or job title, your regular days off, and any holiday or availability requests you submit. It holds no financial information, payroll data, bank details, pay rates, or sensitive personal data. Those are managed separately under your terms of engagement.</p>
+      <h3>3. Why We Hold It — Legal Basis</h3>
+      <p>We use your details to organise shift rotas, manage cover and communicate your schedule. Our legal basis under Article 6(1)(b) of the UK GDPR is <strong>performance of contract</strong> — this information is necessary for us to fulfil our obligations to you as your employer or engager.</p>
+      <h3>4. Who Can See What</h3>
+      <p>The rota — showing who works which shifts and dates — is visible to all team members. This is standard hospitality practice, equivalent to a printed rota on a noticeboard. Personal contact details, if held separately, are accessible to management only. No team member can view another's personal profile through this system.</p>
+      <h3>5. How Long We Keep It</h3>
+      <p>Your details remain in this system for the duration of your engagement. Within 30 days of your role ending, your personal details will be removed. Historical rota patterns may be retained for up to 12 months for operational planning.</p>
+      <h3>6. Your Rights Under UK GDPR</h3>
+      <p>You have the right to: <strong>access</strong> the personal data we hold; <strong>correct</strong> inaccuracies; request <strong>deletion</strong> of your data (subject to legal retention obligations); and <strong>object</strong> to how we process it. To exercise any right, speak to the Floor Manager in the first instance.</p>
+      <h3>7. Complaints</h3>
+      <p>You may lodge a complaint with the <strong>Information Commissioner's Office (ICO)</strong>: <strong>www.ico.org.uk</strong> &nbsp;·&nbsp; <strong>0303 123 1113</strong>.</p>
+      <p class="pfooter">This notice relates solely to the High Tide staff rota system. It is not a substitute for a full employment contract or comprehensive data protection policy. Please retain a copy for your records.</p>
+    </div>
+  </div>
+
+  <!-- SETTINGS TAB (admin only) -->
+  <div id="tab-settings" style="display:none">
+    <div class="sgrid">
+
+      <!-- SHIFTS -->
+      <div class="card">
+        <div class="card-title">Shift Configuration</div>
+        <p class="hint">Enable shifts and set their times. All four slots are individually configurable — activate the Afternoon slot during busy periods to staff the break window.</p>
+        <div id="shlist"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+          <button class="btn btn-teal btn-sm" onclick="saveShifts()">Save Shifts</button>
+          <span id="shmsg"></span>
+        </div>
+      </div>
+
+      <!-- TEAM -->
+      <div class="card">
+        <div class="card-title">Team Members</div>
+        <p class="hint">Edit names and roles. Changes save on leaving the field. Name and role are both editable.</p>
+        <div id="slist"></div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:12px;width:100%" onclick="addStaff()">+ Add Placeholder</button>
+      </div>
+
+      <!-- CLOSURES -->
+      <div class="card">
+        <div class="card-title">Business Closures</div>
+        <p class="hint">Block out date ranges for seasonal closure, refurbishments, or holidays. Closed dates appear on the rota automatically.</p>
+        <div id="cllist"></div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:12px;width:100%" onclick="addClosure()">+ Add Closure</button>
+      </div>
+
+      <!-- PASSWORD -->
+      <div class="card">
+        <div class="card-title">Change Admin Password</div>
+        <div class="fg">
+          <label for="pwc">Current Password</label>
+          <input type="password" id="pwc" name="current-password" autocomplete="current-password" placeholder="Current password">
+        </div>
+        <div class="fg">
+          <label for="pwn">New Password</label>
+          <input type="password" id="pwn" name="new-password" autocomplete="new-password" placeholder="Min 6 characters">
+        </div>
+        <div class="fg">
+          <label for="pwk">Confirm New Password</label>
+          <input type="password" id="pwk" name="confirm-new-password" autocomplete="new-password" placeholder="Repeat new password">
+        </div>
+        <button class="btn btn-navy btn-sm" onclick="changePw()">Update Password</button>
+        <p id="pwmsg"></p>
+      </div>
+
+      <!-- DATA SYNC -->
+      <div class="card">
+        <div class="card-title">Data Sync</div>
+        <p class="hint">All rota data is stored in this browser only. To use the same settings on another device, export and import the data file. Keep a backup before importing.</p>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <button class="btn btn-teal" style="width:100%;justify-content:center" onclick="exportData()">⬇ Export Rota Data</button>
+          <label class="btn btn-ghost" style="width:100%;justify-content:center;cursor:pointer">
+            ⬆ Import Rota Data
+            <input type="file" accept=".json" style="display:none" onchange="importData(this)">
+          </label>
+        </div>
+        <p style="margin-top:12px;font-size:11px;color:var(--muted);line-height:1.6">
+          ⚠ Import overwrites all current data including rota assignments, staff, shifts, and closures. This cannot be undone.
+        </p>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+          <p style="font-size:11px;color:var(--muted);line-height:1.7"><strong style="color:var(--navy)">Note:</strong> For real-time multi-device sync, this app needs a backend. See the project changelog for upgrade options.</p>
+        </div>
+      </div>
+
+      <!-- BANK HOLIDAYS REF -->
+      <div class="card">
+        <div class="card-title">England Bank Holidays 2025–26</div>
+        <p class="hint">Automatically highlighted on the rota in green. Cornwall follows England bank holidays.</p>
+        <div id="bhref" style="font-size:12px;line-height:2.1;color:var(--text)"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <span><strong style="color:var(--navy)">High Tide by Pengelly's</strong> &nbsp;·&nbsp; Staff Rota &nbsp;·&nbsp; <strong>v1.6.0</strong></span>
+    <details class="changelog">
+      <summary>Release notes</summary>
+      <div class="changelog">
+        <h4>v1.6.0 — 25 Apr 2026</h4>
+        <ul>
+          <li>Server-first data layer: all saves go to Netlify Blobs via /api/rota</li>
+          <li>localStorage retained as offline cache and fallback only</li>
+          <li>All devices now share the same rota data in real time</li>
+          <li>Netlify Functions v2 backend (rota.js) with GET/POST handlers</li>
+          <li>Legacy migration (v1–v4 localStorage keys) preserved in loadD()</li>
+          <li>Boot sequence made async to await server load before render</li>
+        </ul>
+        <h4>v1.5.0 — 25 Apr 2026</h4>
+        <ul>
+          <li>Export rota data as dated JSON backup file</li>
+          <li>Import rota data from backup — overwrites with confirmation warning</li>
+          <li>Data Sync card added to Settings with multi-device usage guidance</li>
+          <li>Default staff names stripped from HTML — clean slate on first load</li>
+          <li>localStorage limitation documented in UI</li>
+        </ul>
+        <h4>v1.4.0 — 25 Apr 2026</h4>
+        <ul>
+          <li>Added Afternoon shift slot (15:00–17:00) as fully configurable fourth shift</li>
+          <li>Replaced edit modal with click-to-toggle staff tags in admin mode</li>
+          <li>Day-off tags now clickable in admin to override and assign staff</li>
+          <li>Assigned staff now takes priority over day-off in render logic</li>
+          <li>Role/title field now editable alongside name in Team settings</li>
+          <li>Mon/Tue cells active in admin mode — staff can be assigned to bar nights</li>
+          <li>Bank holiday pill now display:block, no preceding &lt;br&gt; — gap eliminated</li>
+          <li>Login form wrapped in &lt;form&gt; for password manager detection</li>
+          <li>Dynamic document.title updates per week — PDF save-as name is meaningful</li>
+          <li>Storage key bumped to ht_rota_v4 with auto-migration from v1–v3</li>
+          <li>Version footer with semver changelog added</li>
+        </ul>
+        <h4>v1.3.0 — Apr 2026</h4>
+        <ul>
+          <li>Business closure date-range blocking with label support</li>
+          <li>Three configurable shifts (Morning, Lunch, Evening) with active toggles</li>
+          <li>Auto break rows between shifts with time gap displayed</li>
+          <li>Bank holiday pills with emoji inline — 2025–26 England BH calendar</li>
+          <li>Days-off symbol changed to × (was ○)</li>
+          <li>Settings staff name oninput/onblur fix — DOM rebuild no longer destroys focus</li>
+          <li>ProtonPass autocomplete attributes added to all password fields</li>
+        </ul>
+        <h4>v1.2.0 — Apr 2026</h4>
+        <ul>
+          <li>Cinzel Bold identified and applied to HIGH TIDE header</li>
+          <li>Great Vibes applied to "by Pengelly's" subtitle; Lato for body</li>
+          <li>All fonts switched to Bunny Fonts (GDPR-compliant, no Google)</li>
+          <li>Mon/Tue cells blank in staff view — TBC shown in header row only</li>
+          <li>Charlie daysOff corrected to [Mon, Tue, Sun]</li>
+        </ul>
+        <h4>v1.1.0 — Apr 2026</h4>
+        <ul>
+          <li>SHA-256 admin password via Web Crypto API — changeable in dashboard</li>
+          <li>GDPR Staff Privacy Notice tab (UK GDPR / DPA 2018 compliant)</li>
+          <li>Configurable shift labels and times</li>
+          <li>Print-ready A4 landscape with colour preservation</li>
+          <li>localStorage persistence (versioned storage key)</li>
+        </ul>
+        <h4>v1.0.0 — Apr 2026</h4>
+        <ul>
+          <li>Initial build: weekly navigation, colour-coded staff tags</li>
+          <li>Days-off tracking, bank holiday highlighting</li>
+          <li>Navy / gold / cream brand theme matching HT menu</li>
+          <li>Mobile-responsive layout</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</footer>
+
+<script>
+// ── BANK HOLIDAYS ──────────────────────────────────────────────────────────
+const BH = {
+  '2025-05-05':'🏖 Early May BH',
+  '2025-05-26':'🏖 Spring BH',
+  '2025-08-25':'🏖 Summer BH',
+  '2025-12-25':'🎄 Christmas',
+  '2025-12-26':'🎄 Boxing Day',
+  '2026-01-01':'🎆 New Year',
+  '2026-04-03':'✝ Good Friday',
+  '2026-04-06':'✝ Easter Monday',
+  '2026-05-04':'🏖 Early May BH',
+  '2026-05-25':'🏖 Spring BH',
+  '2026-08-31':'🏖 Summer BH',
+  '2026-12-25':'🎄 Christmas',
+  '2026-12-28':'🎄 Boxing Day',
+};
+const BHS = new Set(Object.keys(BH));
+
+// ── CONSTANTS ──────────────────────────────────────────────────────────────
+const SK   = 'ht_rota_v4';
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const TBC  = new Set([0,1]); // Mon + Tue bar/nibbles TBC
+
+// ── DEFAULTS ───────────────────────────────────────────────────────────────
+function defs() {
+  return {
+    pwHash: '',
+    shifts: [
+      { id:'am', label:'Morning',   start:'10:00', end:'12:00', active:false },
+      { id:'ln', label:'Lunch',     start:'12:00', end:'15:00', active:true  },
+      { id:'af', label:'Afternoon', start:'15:00', end:'17:00', active:false },
+      { id:'pm', label:'Evening',   start:'17:00', end:'22:00', active:true  },
+    ],
+    staff: [
+      { id:'s1', name:'', role:'', color:'#4A8FA8', daysOff:[], active:false },
+      { id:'s2', name:'', role:'', color:'#C97840', daysOff:[], active:false },
+      { id:'s3', name:'', role:'', color:'#7A68A8', daysOff:[], active:false },
+      { id:'s4', name:'', role:'', color:'#1C3D4A', daysOff:[], active:false },
+      { id:'s5', name:'', role:'', color:'#9E9087', daysOff:[], active:false },
+      { id:'s6', name:'', role:'', color:'#9E9087', daysOff:[], active:false },
+    ],
+    closedDates: [], // [{ id, label, start:'YYYY-MM-DD', end:'YYYY-MM-DD' }]
+    rota: {}         // isoDate -> { shiftId -> [staffIds] }
+  };
+}
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let D       = defs(); // populated async during boot
+let isAdmin = false;
+let wkOff   = 0;
+
+// ── DATA LAYER — server-first, localStorage as offline cache ───────────────
+async function loadD() {
+  // 1. Try the shared server endpoint (Netlify Blobs)
+  try {
+    const r = await fetch('/api/rota');
+    if (r.ok) {
+      const data = await r.json();
+      if (data && (data.pwHash || data.staff || data.shifts)) {
+        localStorage.setItem(SK, JSON.stringify(data)); // refresh local cache
+        return ensureAf({...defs(), ...data});
+      }
+    }
+  } catch(e) { /* server unreachable — fall through */ }
+
+  // 2. Offline fallback: localStorage cache
+  try {
+    const r = localStorage.getItem(SK);
+    if (r) return ensureAf({...defs(), ...JSON.parse(r)});
+  } catch(e){}
+
+  // 3. Migrate from legacy keys
+  for (const oldKey of ['ht_rota_v4','ht_rota_v3','ht_rota_v2','ht_rota_v1']) {
+    try {
+      const old = localStorage.getItem(oldKey);
+      if (old) return ensureAf({...defs(), ...JSON.parse(old)});
+    } catch(e){}
+  }
+
+  return defs();
+}
+
+function ensureAf(d) {
+  // Ensure the Afternoon shift exists (migration from pre-v1.4 data)
+  if (d.shifts && !d.shifts.find(s=>s.id==='af')) {
+    const lnIdx = d.shifts.findIndex(s=>s.id==='ln');
+    d.shifts.splice(lnIdx>=0?lnIdx+1:d.shifts.length, 0,
+      {id:'af',label:'Afternoon',start:'15:00',end:'17:00',active:false});
+  }
+  return d;
+}
+
+function saveD() {
+  localStorage.setItem(SK, JSON.stringify(D)); // immediate local write
+  fetch('/api/rota', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(D)
+  }).catch(e => console.warn('HT Rota: server sync failed —', e.message));
+}
+
+// ── CRYPTO ─────────────────────────────────────────────────────────────────
+async function sha(s) {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+// ── BOOT ───────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  D = await loadD();
+  if (!D.pwHash) { D.pwHash = await sha('Tide2026'); saveD(); }
+  render();
+});
+
+// ── DATE UTILS ─────────────────────────────────────────────────────────────
+function wkDates(off) {
+  const n=new Date(), dw=n.getDay(), m=new Date(n);
+  m.setDate(n.getDate()+(dw===0?-6:1-dw)+off*7);
+  return Array.from({length:7},(_,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);return d;});
+}
+function iso(d) { return d.toISOString().slice(0,10); }
+function fmt(d) { return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}); }
+
+// ── CLOSED DATE CHECK ──────────────────────────────────────────────────────
+function closureFor(isoDate) {
+  return D.closedDates.find(c => isoDate >= c.start && isoDate <= c.end) || null;
+}
+
+// ── TOGGLE STAFF ───────────────────────────────────────────────────────────
+function toggleStaff(isoDate, shiftId, staffId) {
+  if (!isAdmin) return;
+  if (!D.rota[isoDate]) D.rota[isoDate] = {};
+  if (!D.rota[isoDate][shiftId]) D.rota[isoDate][shiftId] = [];
+  const arr = D.rota[isoDate][shiftId];
+  const idx = arr.indexOf(staffId);
+  if (idx >= 0) arr.splice(idx, 1);
+  else arr.push(staffId);
+  saveD();
+  render();
+}
+
+// ── MAIN RENDER ────────────────────────────────────────────────────────────
+function render() {
+  const dates  = wkDates(wkOff);
+  const active = D.shifts.filter(s=>s.active);
+  const staff  = D.staff.filter(s=>s.name && s.active);
+
+  const weekLabel = `w/c ${fmt(dates[0])} – ${fmt(dates[6])} ${dates[0].getFullYear()}`;
+  document.getElementById('wlbl').textContent = weekLabel;
+  document.title = `High Tide Rota — ${weekLabel}`;
+  document.getElementById('atip').classList.toggle('show', isAdmin);
+
+  // ── THEAD ────────────────────────────────────────────────────────────────
+  let th = `<tr><th class="sh-hdr">Shift</th>`;
+  dates.forEach((d,i) => {
+    const id    = iso(d);
+    const isBH  = BHS.has(id);
+    const isTBC = TBC.has(i);
+    const cl    = closureFor(id);
+    let cls = 'day-hdr';
+    if (cl)        cls += ' cl-hdr';
+    else if (isBH) cls += ' bh-hdr';
+    else if (isTBC) cls += ' tbc-hdr';
+    const pill = cl
+      ? `<span class="cl-pill">✕ ${cl.label||'Closed'}</span>`
+      : isBH ? `<span class="bh-pill">${BH[id]}</span>` : '';
+    const svc = cl ? 'Closed' : isTBC ? 'Bar &amp; Nibbles (TBC)' : 'Full Service';
+    th += `<th class="${cls}">${DAYS[i]}<span class="ddate">${fmt(d)}</span>${pill}<span class="svc-stripe">${svc}</span></th>`;
+  });
+  th += '</tr>';
+  document.getElementById('rh').innerHTML = th;
+
+  // ── TBODY ────────────────────────────────────────────────────────────────
+  let tb = '';
+  if (!active.length) {
+    tb = `<tr><td class="sh-cell"><span class="sn" style="font-size:12px;color:var(--muted)">No shifts active</span></td>${dates.map(()=>'<td></td>').join('')}</tr>`;
+  }
+
+  active.forEach((sh) => {
+    tb += `<tr><td class="sh-cell"><span class="sn">${sh.label}</span><span class="st">${sh.start} – ${sh.end}</span></td>`;
+
+    dates.forEach((d, dayIdx) => {
+      const id = iso(d);
+      const cl = closureFor(id);
+
+      if (cl) {
+        tb += `<td class="closed-cell"><div class="closed-lbl">Closed</div>${cl.label?`<div class="closed-sub">${cl.label}</div>`:''}</td>`;
+        return;
+      }
+
+      const isTBC = TBC.has(dayIdx);
+      const assigned = (D.rota[id]||{})[sh.id] || [];
+
+      // In non-admin view, TBC days are blank
+      if (isTBC && !isAdmin) {
+        tb += `<td class="tbc-cell"></td>`;
+        return;
+      }
+
+      // Admin mode or non-TBC: show staff tags
+      const cellClass = isTBC ? 'tbc-cell' : '';
+      tb += `<td class="${cellClass}">`;
+
+      staff.forEach(s => {
+        const off        = s.daysOff.includes(dayIdx);
+        const isAssigned = assigned.includes(s.id);
+
+        if (isAssigned) {
+          // Assigned — colored, click to remove
+          const clk = isAdmin ? `onclick="toggleStaff('${id}','${sh.id}','${s.id}')"` : '';
+          tb += `<span class="tag${isAdmin?' clickable':''}" style="background:${s.color}" ${clk}>${s.name}</span>`;
+        } else if (off) {
+          // Day off — only shown in non-admin view; in admin mode show as clickable ghost to override
+          if (isAdmin) {
+            tb += `<span class="tag tag-ghost clickable" onclick="toggleStaff('${id}','${sh.id}','${s.id}')" title="Regular day off — click to override">× ${s.name}</span>`;
+          } else {
+            tb += `<span class="tag tag-off">× ${s.name}</span>`;
+          }
+        } else {
+          // Available, not assigned
+          if (isAdmin) {
+            tb += `<span class="tag tag-ghost clickable" onclick="toggleStaff('${id}','${sh.id}','${s.id}')">${s.name}</span>`;
+          }
+          // non-admin: don't show unassigned staff
+        }
+      });
+
+      tb += '</td>';
+    });
+
+    tb += '</tr>';
+  });
+
+  document.getElementById('rb').innerHTML = tb;
+
+  // ── LEGEND ───────────────────────────────────────────────────────────────
+  let lg = '';
+  staff.forEach(s => {
+    lg += `<div class="li"><span class="tag" style="background:${s.color};font-size:10px;padding:2px 8px">${s.name}</span><span>${s.role}</span></div>`;
+  });
+  lg += `
+    <div class="li"><span class="tag tag-off" style="font-size:10px;padding:2px 8px">× Name</span><span>Regular day off</span></div>
+    <div class="li"><span style="background:#EEF3F6;border:1px solid #C8D8DF;padding:2px 8px;border-radius:10px;font-size:10px;color:var(--muted)">TBC</span><span>Bar & Nibbles (Mon/Tue)</span></div>
+    <div class="li"><span style="background:var(--bh);color:white;padding:2px 8px;border-radius:10px;font-size:10px">🏖 BH</span><span>Bank Holiday</span></div>`;
+  document.getElementById('leg').innerHTML = lg;
+
+  renderSettings();
+}
+
+// ── SETTINGS RENDER ────────────────────────────────────────────────────────
+function renderSettings() {
+  if (!isAdmin) return;
+
+  // Shifts
+  const shEl = document.getElementById('shlist');
+  if (shEl) {
+    shEl.innerHTML = D.shifts.map((sh,i) => `
+      <div class="shrow">
+        <input type="checkbox" ${sh.active?'checked':''} onchange="D.shifts[${i}].active=this.checked;saveD()" style="accent-color:var(--teal);width:15px;height:15px;flex-shrink:0">
+        <input class="iinput" style="width:72px;border:1px solid var(--border);background:white;padding:3px 6px" value="${sh.label}"
+          oninput="D.shifts[${i}].label=this.value;saveD()"
+          placeholder="Name">
+        <input type="time" style="border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:'Lato',sans-serif;font-size:12px;background:white" value="${sh.start}"
+          onchange="D.shifts[${i}].start=this.value;saveD()">
+        <span style="font-size:11px;color:var(--muted)">–</span>
+        <input type="time" style="border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:'Lato',sans-serif;font-size:12px;background:white" value="${sh.end}"
+          onchange="D.shifts[${i}].end=this.value;saveD()">
+      </div>`).join('');
+  }
+
+  // Staff — name + role both editable
+  const slEl = document.getElementById('slist');
+  if (slEl) {
+    slEl.innerHTML = D.staff.map((s,i) => `
+      <div class="serow">
+        <span class="cdot" style="background:${s.color}"></span>
+        <div style="flex:1;min-width:0">
+          <input class="iinput" value="${s.name}" placeholder="[Staff TBC]"
+            oninput="D.staff[${i}].name=this.value;D.staff[${i}].active=!!this.value;saveD()"
+            onblur="render()">
+          <input class="iinput role-input" value="${s.role}" placeholder="Role / title"
+            oninput="D.staff[${i}].role=this.value;saveD()"
+            onblur="render()">
+        </div>
+        <span class="sbadge ${s.active?'sb-on':'sb-off'}">${s.active?'Active':'TBC'}</span>
+      </div>`).join('');
+  }
+
+  // Closures
+  const clEl = document.getElementById('cllist');
+  if (clEl) {
+    if (!D.closedDates.length) {
+      clEl.innerHTML = `<p style="font-size:12px;color:var(--muted);padding:8px 0">No closures set.</p>`;
+    } else {
+      clEl.innerHTML = D.closedDates.map((c,i) => `
+        <div class="clrow">
+          <div style="flex:1">
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+              <input class="iinput" style="border:1px solid var(--border);background:white;font-size:12px" value="${c.label}" placeholder="Label (e.g. Refurbishment)"
+                oninput="D.closedDates[${i}].label=this.value;saveD()"
+                onblur="render()">
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input type="date" style="border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:12px;font-family:'Lato',sans-serif" value="${c.start}"
+                onchange="D.closedDates[${i}].start=this.value;saveD();render()">
+              <span style="font-size:11px;color:var(--muted)">to</span>
+              <input type="date" style="border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:12px;font-family:'Lato',sans-serif" value="${c.end}"
+                onchange="D.closedDates[${i}].end=this.value;saveD();render()">
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="delClosure(${i})" style="color:var(--red);border-color:var(--red);flex-shrink:0">✕</button>
+        </div>`).join('');
+    }
+  }
+
+  // BH reference
+  const bhEl = document.getElementById('bhref');
+  if (bhEl) {
+    bhEl.innerHTML = Object.entries(BH).map(([dt,nm])=>{
+      const d=new Date(dt+'T00:00:00');
+      return `<div><strong style="color:var(--muted);min-width:80px;display:inline-block">${fmt(d)}</strong> ${nm}</div>`;
+    }).join('');
+  }
+}
+
+function saveShifts() {
+  saveD(); render();
+  const m = document.getElementById('shmsg');
+  m.textContent = '✓ Saved'; setTimeout(()=>m.textContent='',2500);
+}
+
+// ── CLOSURES ───────────────────────────────────────────────────────────────
+function addClosure() {
+  const today = iso(new Date());
+  D.closedDates.push({ id:'cl'+Date.now(), label:'', start:today, end:today });
+  saveD(); renderSettings();
+}
+function delClosure(i) {
+  D.closedDates.splice(i,1); saveD(); renderSettings(); render();
+}
+
+// ── STAFF ──────────────────────────────────────────────────────────────────
+function addStaff() {
+  D.staff.push({id:'s'+Date.now(),name:'',role:'',color:'#9E9087',daysOff:[],active:false});
+  saveD(); renderSettings();
+}
+
+// ── PASSWORD ───────────────────────────────────────────────────────────────
+async function changePw() {
+  const cur=document.getElementById('pwc').value,
+        nw =document.getElementById('pwn').value,
+        cf =document.getElementById('pwk').value;
+  const m = document.getElementById('pwmsg');
+  if (await sha(cur)!==D.pwHash)    { m.style.color='var(--red)'; m.textContent='✗ Current password incorrect.'; return; }
+  if (nw.length<6)                  { m.style.color='var(--red)'; m.textContent='✗ New password must be 6+ characters.'; return; }
+  if (nw!==cf)                      { m.style.color='var(--red)'; m.textContent='✗ Passwords do not match.'; return; }
+  D.pwHash=await sha(nw); saveD();
+  m.style.color='var(--green)'; m.textContent='✓ Password updated.';
+  ['pwc','pwn','pwk'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ── AUTH ───────────────────────────────────────────────────────────────────
+function openLogin()  {
+  document.getElementById('lw').classList.add('open');
+  setTimeout(()=>document.getElementById('lpw').focus(), 100);
+}
+function closeLogin() {
+  document.getElementById('lw').classList.remove('open');
+  document.getElementById('lerr').style.display='none';
+}
+
+async function doLogin() {
+  const pw = document.getElementById('lpw').value;
+  if (await sha(pw)===D.pwHash) {
+    isAdmin=true;
+    document.getElementById('astat').textContent='⚙ Admin mode';
+    document.getElementById('astat').classList.add('on');
+    document.getElementById('lbtn').style.display='none';
+    document.getElementById('obtn').style.display='';
+    document.getElementById('stab').style.display='';
+    document.getElementById('lpw').value='';
+    closeLogin(); render();
+  } else {
+    document.getElementById('lerr').style.display='block';
+  }
+}
+
+function doLogout() {
+  isAdmin=false;
+  document.getElementById('astat').textContent='Staff view';
+  document.getElementById('astat').classList.remove('on');
+  document.getElementById('lbtn').style.display='';
+  document.getElementById('obtn').style.display='none';
+  document.getElementById('stab').style.display='none';
+  setTab('rota',document.querySelector('.tbtn')); render();
+}
+
+// ── DATA EXPORT / IMPORT ───────────────────────────────────────────────────
+function exportData() {
+  const payload = JSON.stringify(D, null, 2);
+  const blob = new Blob([payload], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const ts   = new Date().toISOString().slice(0,10);
+  a.href     = url;
+  a.download = `ht-rota-backup-${ts}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.shifts || !imported.staff) throw new Error('Invalid rota file');
+      D = {...defs(), ...imported};
+      saveD();
+      render();
+      // Reset the file input so the same file can be re-imported if needed
+      input.value = '';
+      alert('✓ Rota data imported successfully.');
+    } catch(err) {
+      alert('✗ Import failed — file does not appear to be a valid rota export.');
+      input.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── TABS ───────────────────────────────────────────────────────────────────
+function setTab(n,el) {
+  ['rota','privacy','settings'].forEach(t=>{ const e=document.getElementById('tab-'+t); if(e) e.style.display=t===n?'':'none'; });
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  if(n==='settings') renderSettings();
+}
+function chgWk(d) { wkOff+=d; render(); }
+</script>
+</body>
+</html>

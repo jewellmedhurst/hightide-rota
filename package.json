@@ -1,0 +1,8 @@
+{
+  "name": "ht-rota",
+  "version": "1.6.0",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^8.0.0"
+  }
+}
