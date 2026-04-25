@@ -359,10 +359,14 @@ body { font-family: 'Lato', system-ui, sans-serif; background: var(--cream); col
 <!-- FOOTER -->
 <footer class="site-footer">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-    <span><strong style="color:var(--navy)">High Tide by Pengelly's</strong> &nbsp;·&nbsp; Staff Rota &nbsp;·&nbsp; <strong>v1.6.0</strong></span>
+    <span><strong style="color:var(--navy)">High Tide by Pengelly's</strong> &nbsp;·&nbsp; Staff Rota &nbsp;·&nbsp; <strong>v1.7.0</strong></span>
     <details class="changelog">
       <summary>Release notes</summary>
       <div class="changelog">
+        <h4>v1.7.0 — 25 Apr 2026</h4>
+        <ul>
+          <li>Default staff roles updated: Hazel → Manager, Charlie → Chef, Benji → KP, Jae → F.O.H.</li>
+        </ul>
         <h4>v1.6.0 — 25 Apr 2026</h4>
         <ul>
           <li>Server-first data layer: all saves go to Netlify Blobs via /api/rota</li>
@@ -467,12 +471,12 @@ function defs() {
       { id:'pm', label:'Evening',   start:'17:00', end:'22:00', active:true  },
     ],
     staff: [
-      { id:'s1', name:'', role:'', color:'#4A8FA8', daysOff:[], active:false },
-      { id:'s2', name:'', role:'', color:'#C97840', daysOff:[], active:false },
-      { id:'s3', name:'', role:'', color:'#7A68A8', daysOff:[], active:false },
-      { id:'s4', name:'', role:'', color:'#1C3D4A', daysOff:[], active:false },
-      { id:'s5', name:'', role:'', color:'#9E9087', daysOff:[], active:false },
-      { id:'s6', name:'', role:'', color:'#9E9087', daysOff:[], active:false },
+      { id:'s1', name:'Hazel',   role:'Manager', color:'#4A8FA8', daysOff:[0,6],   active:true  },
+      { id:'s2', name:'Charlie', role:'Chef',    color:'#C97840', daysOff:[0,1,6], active:true  },
+      { id:'s3', name:'Benji',   role:'KP',      color:'#7A68A8', daysOff:[0,1],   active:true  },
+      { id:'s4', name:'Jae',     role:'F.O.H.',  color:'#1C3D4A', daysOff:[],      active:true  },
+      { id:'s5', name:'',        role:'',        color:'#9E9087', daysOff:[],      active:false },
+      { id:'s6', name:'',        role:'',        color:'#9E9087', daysOff:[],      active:false },
     ],
     closedDates: [], // [{ id, label, start:'YYYY-MM-DD', end:'YYYY-MM-DD' }]
     rota: {}         // isoDate -> { shiftId -> [staffIds] }
