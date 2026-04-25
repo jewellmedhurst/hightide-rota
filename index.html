@@ -359,10 +359,17 @@ body { font-family: 'Lato', system-ui, sans-serif; background: var(--cream); col
 <!-- FOOTER -->
 <footer class="site-footer">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-    <span><strong style="color:var(--navy)">High Tide by Pengelly's</strong> &nbsp;·&nbsp; Staff Rota &nbsp;·&nbsp; <strong>v1.7.0</strong></span>
+    <span><strong style="color:var(--navy)">High Tide by Pengelly's</strong> &nbsp;·&nbsp; Staff Rota &nbsp;·&nbsp; <strong>v1.8.0</strong></span>
     <details class="changelog">
       <summary>Release notes</summary>
       <div class="changelog">
+        <h4>v1.8.0 — 25 Apr 2026</h4>
+        <ul>
+          <li>Switched data backend from Netlify Blobs to Supabase (EU West, Ireland)</li>
+          <li>All devices now share rota data in real time via Supabase REST API</li>
+          <li>localStorage retained as offline cache and fallback</li>
+          <li>No serverless functions required — single HTML file deployment</li>
+        </ul>
         <h4>v1.7.0 — 25 Apr 2026</h4>
         <ul>
           <li>Default staff roles updated: Hazel → Manager, Charlie → Chef, Benji → KP, Jae → F.O.H.</li>
@@ -488,19 +495,25 @@ let D       = defs(); // populated async during boot
 let isAdmin = false;
 let wkOff   = 0;
 
-// ── DATA LAYER — server-first, localStorage as offline cache ───────────────
+// ── SUPABASE CONFIG ────────────────────────────────────────────────────────
+const SUPA_URL = 'https://xwcpbmuusamqwsntsgjg.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3Y3BibXV1c2FtcXdzbnRzZ2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMTc4MDksImV4cCI6MjA5MjY5MzgwOX0.oSI3XvBnj5c15qRDy0NA25bC78VJLD1u8xshA6OtbNA';
+const SUPA_HDR = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' };
+
+// ── DATA LAYER — Supabase primary, localStorage as offline cache ───────────
 async function loadD() {
-  // 1. Try the shared server endpoint (Netlify Blobs)
+  // 1. Try Supabase
   try {
-    const r = await fetch('/api/rota');
+    const r = await fetch(SUPA_URL + '/rest/v1/rota_data?id=eq.1&select=data', { headers: SUPA_HDR });
     if (r.ok) {
-      const data = await r.json();
-      if (data && (data.pwHash || data.staff || data.shifts)) {
-        localStorage.setItem(SK, JSON.stringify(data)); // refresh local cache
+      const rows = await r.json();
+      if (rows.length && rows[0].data && (rows[0].data.pwHash || rows[0].data.staff)) {
+        const data = rows[0].data;
+        localStorage.setItem(SK, JSON.stringify(data));
         return ensureAf({...defs(), ...data});
       }
     }
-  } catch(e) { /* server unreachable — fall through */ }
+  } catch(e) { /* offline — fall through */ }
 
   // 2. Offline fallback: localStorage cache
   try {
@@ -520,7 +533,6 @@ async function loadD() {
 }
 
 function ensureAf(d) {
-  // Ensure the Afternoon shift exists (migration from pre-v1.4 data)
   if (d.shifts && !d.shifts.find(s=>s.id==='af')) {
     const lnIdx = d.shifts.findIndex(s=>s.id==='ln');
     d.shifts.splice(lnIdx>=0?lnIdx+1:d.shifts.length, 0,
@@ -530,12 +542,12 @@ function ensureAf(d) {
 }
 
 function saveD() {
-  localStorage.setItem(SK, JSON.stringify(D)); // immediate local write
-  fetch('/api/rota', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(D)
-  }).catch(e => console.warn('HT Rota: server sync failed —', e.message));
+  localStorage.setItem(SK, JSON.stringify(D));
+  fetch(SUPA_URL + '/rest/v1/rota_data?id=eq.1', {
+    method: 'PATCH',
+    headers: {...SUPA_HDR, 'Prefer': 'return=minimal'},
+    body: JSON.stringify({ data: D })
+  }).catch(e => console.warn('HT Rota: Supabase sync failed —', e.message));
 }
 
 // ── CRYPTO ─────────────────────────────────────────────────────────────────
