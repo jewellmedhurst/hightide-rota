@@ -1,40 +1,52 @@
-import { getStore } from "@netlify/blobs";
+const { getStore } = require("@netlify/blobs");
 
-export default async (req, context) => {
+exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Content-Type": "application/json",
   };
 
-  if (req.method === "OPTIONS") {
-    return new Response("", { status: 204, headers });
+  // CORS preflight
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 204, headers, body: "" };
   }
 
-  const store = getStore("rota");
+  let store;
+  try {
+    store = getStore("rota");
+  } catch (e) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: "Storage unavailable: " + e.message }),
+    };
+  }
 
-  if (req.method === "GET") {
+  // GET — return current rota data
+  if (event.httpMethod === "GET") {
     try {
-      const data = await store.get("main", { type: "json" });
-      return new Response(JSON.stringify(data || {}), { status: 200, headers });
+      const raw = await store.get("main");
+      const data = raw ? JSON.parse(raw) : {};
+      return { statusCode: 200, headers, body: JSON.stringify(data) };
     } catch (e) {
-      return new Response(JSON.stringify({}), { status: 200, headers });
+      return { statusCode: 200, headers, body: JSON.stringify({}) };
     }
   }
 
-  if (req.method === "POST") {
+  // POST — save rota data
+  if (event.httpMethod === "POST") {
     try {
-      const body = await req.json();
-      await store.setJSON("main", body);
-      return new Response(JSON.stringify({ ok: true }), { status: 200, headers });
+      const body = JSON.parse(event.body);
+      await store.set("main", JSON.stringify(body));
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
     } catch (e) {
-      return new Response(
-        JSON.stringify({ error: e.message }),
-        { status: 500, headers }
-      );
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: e.message }),
+      };
     }
   }
 
-  return new Response("Method not allowed", { status: 405, headers });
+  return { statusCode: 405, headers, body: "Method not allowed" };
 };
-
-export const config = { path: "/api/rota" };
